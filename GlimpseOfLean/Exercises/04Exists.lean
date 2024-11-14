@@ -21,7 +21,7 @@ Furthermore, we can decompose conjunction and equivalences.
   gives two new assumptions `hPQ : P → Q` and `hQP : Q → P`.
 -/
 
-example (p q r s : Prop) (h : p → r) (h' : q → s) : p ∧ q → r ∧ s := by {
+example (p q r s : Prop) (h : p → r) (h' : q → s) : (p ∧ q) → (r ∧ s) := by {
   intro hpq
   rcases hpq with ⟨hp, hq⟩
   constructor
@@ -32,15 +32,16 @@ example (p q r s : Prop) (h : p → r) (h' : q → s) : p ∧ q → r ∧ s := b
 /- One can also prove a conjunction without the constructor tactic by gathering both sides
 using the `⟨`/`⟩` brackets, so the above proof can be rewritten as. -/
 
-example (p q r s : Prop) (h : p → r) (h' : q → s) : p ∧ q → r ∧ s := by {
+example (p q r s : Prop) (h : p → r) (h' : q → s) : (p ∧ q) → (r ∧ s) := by {
   intro hpq
   exact ⟨h hpq.1, h' hpq.2⟩
 }
 
 /- You can choose your own style in the next exercise. -/
 
-example (p q r : Prop) : (p → (q → r)) ↔ p ∧ q → r := by {
-  sorry
+example (p q r : Prop) : (p → (q → r)) ↔ ((p ∧ q) → r) := by {
+  --TODO: figure out how to intro this correctly (getting "insufficient number of binders")
+  exact Iff.symm and_imp
 }
 
 /- Of course Lean doesn't need any help to prove this kind of logical tautologies.
@@ -85,7 +86,11 @@ By definition, `a ∣ b ↔ ∃ k, b = a*k`, so you can prove `a ∣ b` using th
 -/
 
 example (a b c : ℤ) (h₁ : a ∣ b) (h₂ : b ∣ c) : a ∣ c := by {
-  sorry
+  rcases h₁ with ⟨k₁, hbeak⟩
+  rcases h₂ with ⟨k₂, hcebk⟩
+  rw[hcebk, hbeak]
+  use k₁ * k₂
+  ring
 }
 
 
@@ -96,7 +101,13 @@ We can now start combining quantifiers, using the definition
 -/
 
 example (f g : ℝ → ℝ) (h : Surjective (g ∘ f)) : Surjective g := by {
+  unfold Surjective at h
+  unfold Surjective
+
+  intro x
+
   sorry
+  --exact Surjective.of_comp h
 }
 
 /- This is the end of this file about `∃` and `∧`. You've learned about tactics
@@ -110,3 +121,4 @@ actual mathematical content. You now get to choose one file from the `Topics`.
 
 See the bottom of `03Forall` for descriptions of the choices.
 -/
+
