@@ -212,4 +212,3 @@ a Lean proof looks like and have learned about the following tactics:
 * `exact`
 * `calc`
 -/
-
