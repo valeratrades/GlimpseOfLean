@@ -127,8 +127,8 @@ example (hu : seq_limit u l) (hv : seq_limit v l') :
   have fact₁ : |u n - l| ≤ ε/2 := hN₁ n (by linarith)
   have fact₂ : |v n - l'| ≤ ε/2 := hN₂ n (by linarith)
 
-  calc |(u + v) n - (l + l')|
-    _ = |u n + v n - (l + l')|   := rfl
+  calc
+    |(u + v) n - (l + l')| = |u n + v n - (l + l')|   := rfl
     _ = |(u n - l) + (v n - l')|                      := by ring
     _ ≤ |u n - l| + |v n - l'|                        := by apply abs_add
     _ ≤ ε                                             := by linarith [fact₁, fact₂]
@@ -174,7 +174,7 @@ lemma uniq_limit : seq_limit u l → seq_limit u l' → l = l' := by {
   simp_all only [seq_limit]
 
   have: ∀ ε > 0, |l - l'| ≤ ε := by {
-    intro ε ε_pos  
+    intro ε ε_pos
     --have hl := h ε ε_pos
     have ε2_pos : ε/2 > 0 := by linarith
     rcases h (ε/2) ε2_pos with ⟨N₁, hN₁⟩
@@ -291,4 +291,3 @@ In the next exercise, you can reuse
 
 example (hu : CauchySequence u) (hl : cluster_point u l) : seq_limit u l := by
   sorry
-
