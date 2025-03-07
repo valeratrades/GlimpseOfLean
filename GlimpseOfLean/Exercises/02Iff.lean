@@ -221,4 +221,3 @@ equivalences. You learned about tactics:
 * `have`
 * `constructor`
 -/
-
