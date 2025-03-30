@@ -70,14 +70,24 @@ variable {φ : Variable → H} {A B : Formula}
 @[simp] lemma eval_top : eval v top = ⊤ := by {
   simp only [eval, himp_self]
 }
+@[simp] lemma eval_top : eval v top = ⊤ := by {
+  simp only [eval, himp_self]
+}
 
 @[simp]
+lemma isTrue_equiv : eval v (A ⇔ B) = (eval v A ⇨ eval v B) ⊓ (eval v B ⇨ eval v A) := by {
+  simp only [eval, himp_self]
+}
 lemma isTrue_equiv : eval v (A ⇔ B) = (eval v A ⇨ eval v B) ⊓ (eval v B ⇨ eval v A) := by {
   simp only [eval, himp_self]
 }
 
 /- As an exercise, let's prove the following proposition, which holds in intuitionistic logic. -/
 
+example : Valid (~(A && ~A)) := by {
+  simp only [Valid, Models, eval_neg, eval, himp_self]
+  simp
+}
 example : Valid (~(A && ~A)) := by {
   simp only [Valid, Models, eval_neg, eval, himp_self]
   simp
@@ -126,13 +136,12 @@ macro_rules
   mem_insert_of_mem y : x ∈ s → x ∈ insert y s
 ```
 -/
-example : Provable ((~A || ~B) ⇒ ~(A && B)) := by {
+example : Provable ((~A || ~B) ⇒ ~(A && B)) := by
   apply orE (A := ~A) (B := ~B)
   . sorry
   .
     sorry
   . sorry
-}
 
 /- Optional exercise -/
 example : Provable (~(A && ~A)) := by

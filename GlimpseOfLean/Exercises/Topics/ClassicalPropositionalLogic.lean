@@ -21,7 +21,7 @@ inductive Formula : Type where
   | impl : Formula → Formula → Formula
 
 open Formula
-local notation:max (priority := high) "	#" x:max => var x
+local notation:max (priority := high) "		#" x:max => var x
 local infix:30 (priority := high) " || " => disj
 local infix:35 (priority := high) " && " => conj
 local infix:28 (priority := high) " ⇒ " => impl
@@ -77,9 +77,6 @@ lemma double_neg : Valid (~~A ⇔ A) := by {
   tauto
 }
 
-/- We will frequently need to add an element to a set. This is done using
-the `insert` function: `insert A Γ` means `Γ ∪ {A}`. -/
-
 @[simp] lemma satisfies_insert_iff : Satisfies v (insert A Γ) ↔ IsTrue v A ∧ Satisfies v Γ := by {
   simp[Satisfies]
 }
@@ -133,8 +130,23 @@ macro_rules
 ```
 -/
 
--- Let’s first see an example using the `apply_ax` tactic
-example : {A, B} ⊢ A && B := by
+example : insert A (insert B ∅) ⊢ A && B := by
+  exact andI (ax (mem_insert _ _)) (ax (mem_insert_of_mem _ (mem_insert _ _)))
+
+example : insert A (insert B ∅) ⊢ A && B := by
+  exact andI (by apply_ax) (by apply_ax)
+
+--example : insert A (insert B ∅) ⊢ A && B := by
+--  apply andI
+--  .
+--    apply ax
+--    apply mem_insert
+--  . sorry
+
+-- ~~A is defined as ~A => ⊥
+-- ~A is defined as A => ⊥
+
+example : Provable (~~A ⇔ A) := by {
   apply andI
   apply_ax
   apply_ax

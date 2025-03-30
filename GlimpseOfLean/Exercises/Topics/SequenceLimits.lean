@@ -26,7 +26,13 @@ Let's prove some exercises using `linarith`.
 example (a b : ℝ) (ha : 0 ≤ a) (hb : 0 ≤ b) : 0 ≤ a + b := by {
   linarith
 }
+example (a b : ℝ) (ha : 0 ≤ a) (hb : 0 ≤ b) : 0 ≤ a + b := by {
+  linarith
+}
 
+example (a b c d : ℝ) (hab : a ≤ b) (hcd : c ≤ d) : a + c ≤ b + d := by {
+  linarith
+}
 example (a b c d : ℝ) (hab : a ≤ b) (hcd : c ≤ d) : a + c ≤ b + d := by {
   linarith
 }
@@ -74,6 +80,16 @@ example (h : ∀ n, u n = l) : seq_limit u l := by {
   norm_num
   linarith
 }
+example (h : ∀ n, u n = l) : seq_limit u l := by {
+  intro ε ε_pos
+  use 0
+  intro n _
+  specialize h n
+  rw[h]
+  ring
+  norm_num
+  linarith
+}
 
 
 /- When dealing with absolute values, we'll use lemmas:
@@ -93,6 +109,17 @@ or the primed version:
 
 -- Assume `l > 0`. Then `u` ts to `l` implies `u n ≥ l/2` for large enough `n`
 example (h : seq_limit u l) (hl : l > 0) :
+    ∃ N, ∀ n ≥ N, u n ≥ l/2 := by {
+  simp[seq_limit] at h
+  have:= h (l/2) (by linarith)
+  obtain ⟨N, hN⟩ : ∃ N, ∀ n ≥ N, |u n - l| ≤ l/2 := this
+  use N
+  intro n hn
+  have:= hN n hn
+  norm_num at *
+  rw[abs_le] at this
+  linarith
+}
     ∃ N, ∀ n ≥ N, u n ≥ l/2 := by {
   simp[seq_limit] at h
   have:= h (l/2) (by linarith)
@@ -127,12 +154,13 @@ example (hu : seq_limit u l) (hv : seq_limit v l') :
   intros n hn
   have : n ≥ N₁ := by exact le_of_max_le_left hn
   rw[ge_max_iff] at hn
+  rw[ge_max_iff] at hn
   rcases hn with ⟨_hn₁, hn₂⟩
   have fact₁ : |u n - l| ≤ ε/2 := hN₁ n (by linarith)
   have fact₂ : |v n - l'| ≤ ε/2 := hN₂ n (by linarith)
 
-  calc
-    |(u + v) n - (l + l')| = |u n + v n - (l + l')|   := rfl
+  calc |(u + v) n - (l + l')|
+    _ = |u n + v n - (l + l')|   := rfl
     _ = |(u n - l) + (v n - l')|                      := by ring
     _ ≤ |u n - l| + |v n - l'|                        := by apply abs_add
     _ ≤ ε                                             := by linarith [fact₁, fact₂]
@@ -140,6 +168,26 @@ example (hu : seq_limit u l) (hv : seq_limit v l') :
 
 /- Let's do something similar: the squeezing theorem. -/
 example (hu : seq_limit u l) (hw : seq_limit w l) (h : ∀ n, u n ≤ v n) (h' : ∀ n, v n ≤ w n) :
+    seq_limit v l := by {
+  intros ε ε_pos
+  rcases hu ε (by linarith) with ⟨N₁, hN₁⟩
+  rcases hw ε (by linarith) with ⟨N₂, hN₂⟩
+  use max N₁ N₂
+  intro n
+  rw[ge_max_iff]
+  intro ⟨hge1, hge2⟩
+
+  have h1 := hN₁ n (by linarith)
+  have h2 := hN₂ n (by linarith)
+  rw[abs_le] at *
+  constructor
+  . calc -ε
+    _ ≤ u n - l := h1.1
+    _ ≤ v n - l := by linarith[h n]
+  . calc v n - l
+    _ ≤ w n - l := by linarith[h' n]
+    _ ≤ ε := h2.2
+}
     seq_limit v l := by {
   intros ε ε_pos
   rcases hu ε (by linarith) with ⟨N₁, hN₁⟩
@@ -172,6 +220,37 @@ Recall we listed three variations on the triangle inequality at the beginning of
 
 -- A sequence admits at most one limit. You will be able to use that lemma in the following
 -- exercises.
+lemma uniq_limit : seq_limit u l → seq_limit u l' → l = l' := by {
+  intro h h'
+  simp_all only [seq_limit]
+
+  have: ∀ ε > 0, |l - l'| ≤ ε := by {
+    intro ε ε_pos
+    --have hl := h ε ε_pos
+    have ε2_pos : ε/2 > 0 := by linarith
+    rcases h (ε/2) ε2_pos with ⟨N₁, hN₁⟩
+    rcases h' (ε/2) ε2_pos with ⟨N₂, hN₂⟩
+    let m := max N₁ N₂
+    have h1:= hN₁ m (by { apply le_max_left })
+    have h2:= hN₂ m (by { apply le_max_right })
+    rw[abs_le] at h1 h2 ⊢
+
+    simp_all only [gt_iff_lt, ge_iff_le, div_pos_iff_of_pos_left, Nat.ofNat_pos, neg_le_sub_iff_le_add, tsub_le_iff_right,
+    m]
+    obtain ⟨left, right⟩ := h1
+    obtain ⟨left_1, right_1⟩ := h2
+    apply And.intro
+    · calc l'
+      _ ≤ u (max N₁ N₂) + ε / 2 := left_1
+      _ ≤ (ε / 2 + l) + ε / 2 := by linarith
+      _ ≤ l + ε := by linarith
+    · calc l
+      _ ≤ u (max N₁ N₂) + ε / 2 := left
+      _ ≤ (ε / 2 + l') + ε / 2 := by linarith
+      _ ≤ ε + l' := by linarith
+  }
+  rw[eq_of_abs_sub_le_all l l' this]
+}
 lemma uniq_limit : seq_limit u l → seq_limit u l' → l = l' := by {
   intro h h'
   simp_all only [seq_limit]
