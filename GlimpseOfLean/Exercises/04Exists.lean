@@ -40,8 +40,15 @@ example (p q r s : Prop) (h : p → r) (h' : q → s) : (p ∧ q) → (r ∧ s) 
 /- You can choose your own style in the next exercise. -/
 
 example (p q r : Prop) : (p → (q → r)) ↔ ((p ∧ q) → r) := by {
-  --TODO: figure out how to intro this correctly (getting "insufficient number of binders")
-  exact Iff.symm and_imp
+  constructor
+  . intro hptqtr
+    intro hpq
+    rcases hpq with ⟨hp, hq⟩
+    exact hptqtr hp hq
+  . intro hpaqtr
+    intro hp
+    intro hq
+    exact hpaqtr ⟨hp, hq⟩
 }
 
 /- Of course Lean doesn't need any help to prove this kind of logical tautologies.
@@ -102,12 +109,16 @@ We can now start combining quantifiers, using the definition
 
 example (f g : ℝ → ℝ) (h : Surjective (g ∘ f)) : Surjective g := by {
   unfold Surjective at h
+
   unfold Surjective
 
   intro x
+  
+  have h' := h x
+  rcases h' with ⟨y, hgf⟩
 
-  sorry
-  --exact Surjective.of_comp h
+  use f y
+  exact hgf
 }
 
 /- This is the end of this file about `∃` and `∧`. You've learned about tactics

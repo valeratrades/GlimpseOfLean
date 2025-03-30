@@ -21,7 +21,7 @@ inductive Formula : Type where
   | impl : Formula → Formula → Formula
 
 open Formula
-local notation:max (priority := high) "#" x:max => var x
+local notation:max (priority := high) "	#" x:max => var x
 local infix:30 (priority := high) " || " => disj
 local infix:35 (priority := high) " && " => conj
 local infix:28 (priority := high) " ⇒ " => impl
@@ -58,22 +58,27 @@ variable {v : Variable → Prop} {A B : Formula}
 @[simp] lemma isTrue_neg : IsTrue v ~A ↔ ¬ IsTrue v A := by simp
 
 @[simp] lemma isTrue_top : IsTrue v ⊤ := by {
-  sorry
+  simp
 }
 
 @[simp] lemma isTrue_equiv : IsTrue v (A ⇔ B) ↔ (IsTrue v A ↔ IsTrue v B) := by {
-  sorry
+  simp
+  tauto
 }
 
 /- As an exercise, let's prove (using classical logic) the double negation elimination principle.
   `by_contra h` might be useful to prove something by contradiction. -/
 
-example : Valid (~~A ⇔ A) := by {
-  sorry
+lemma double_neg : Valid (~~A ⇔ A) := by {
+  intro v
+  intro _
+  rw[isTrue_equiv]
+  rw[isTrue_neg, isTrue_neg]
+  tauto
 }
 
 @[simp] lemma satisfies_insert_iff : Satisfies v (insert A Γ) ↔ IsTrue v A ∧ Satisfies v Γ := by {
-  simp [Satisfies]
+  simp[Satisfies]
 }
 
 /- Let's define provability w.r.t. classical logic. -/
@@ -84,17 +89,16 @@ local infix:27 " ⊢ " => ProvableFrom
 /- `Γ ⊢ A` is the predicate that there is a proof tree with conclusion `A` with assumptions from
   `Γ`. This is a typical list of rules for natural deduction with classical logic. -/
 inductive ProvableFrom : Set Formula → Formula → Prop
-  | ax    : ∀ {Γ A},   A ∈ Γ   → Γ ⊢ A
-  | impI  : ∀ {Γ A B},  insert A Γ ⊢ B                → Γ ⊢ A ⇒ B
-  | impE  : ∀ {Γ A B},           Γ ⊢ (A ⇒ B) → Γ ⊢ A  → Γ ⊢ B
-  | andI  : ∀ {Γ A B},           Γ ⊢ A       → Γ ⊢ B  → Γ ⊢ A && B
-  | andE1 : ∀ {Γ A B},           Γ ⊢ A && B           → Γ ⊢ A
-  | andE2 : ∀ {Γ A B},           Γ ⊢ A && B           → Γ ⊢ B
-  | orI1  : ∀ {Γ A B},           Γ ⊢ A                → Γ ⊢ A || B
-  | orI2  : ∀ {Γ A B},           Γ ⊢ B                → Γ ⊢ A || B
-  | orE   : ∀ {Γ A B C}, Γ ⊢ A || B → insert A Γ ⊢ C → insert B Γ ⊢ C → Γ ⊢ C
-  | botC  : ∀ {Γ A},   insert ~A Γ ⊢ ⊥                → Γ ⊢ A
-
+  | ax /-Axiom-/   : ∀ {Γ A},   A ∈ Γ   → Γ ⊢ A
+  | impI /-Implication Introduction-/   : ∀ {Γ A B},  insert A Γ ⊢ B                → Γ ⊢ A ⇒ B
+  | impE /-Implication Elimination-/    : ∀ {Γ A B},           Γ ⊢ (A ⇒ B) → Γ ⊢ A  → Γ ⊢ B
+  | andI /-Conjunction Introduction-/   : ∀ {Γ A B},           Γ ⊢ A       → Γ ⊢ B  → Γ ⊢ A && B
+  | andE1 /-Conjunction Elimination.1-/ : ∀ {Γ A B},           Γ ⊢ A && B           → Γ ⊢ A
+  | andE2 /-Conjunction Elimination.2-/ : ∀ {Γ A B},           Γ ⊢ A && B           → Γ ⊢ B
+  | orI1 /-Disjunction Introduction.1-/ : ∀ {Γ A B},           Γ ⊢ A                → Γ ⊢ A || B
+  | orI2 /-Disjunction Introduction.2-/ : ∀ {Γ A B},           Γ ⊢ B                → Γ ⊢ A || B
+  | orE /-Disjunction Elimination-/     : ∀ {Γ A B C}, Γ ⊢ A || B → insert A Γ ⊢ C → insert B Γ ⊢ C → Γ ⊢ C
+  | botC /-Contradiction Rule-/         : ∀ {Γ A},   insert ~A Γ ⊢ ⊥                → Γ ⊢ A
 end
 
 local infix:27 (priority := high) " ⊢ " => ProvableFrom
@@ -130,20 +134,156 @@ example : insert A (insert B ∅) ⊢ A && B := by
 example : insert A (insert B ∅) ⊢ A && B := by
   exact andI (by apply_ax) (by apply_ax)
 
+--example : insert A (insert B ∅) ⊢ A && B := by
+--  apply andI
+--  . 
+--    apply ax
+--    apply mem_insert
+--  . sorry
+
+-- ~~A is defined as ~A => ⊥
+-- ~A is defined as A => ⊥
+
 example : Provable (~~A ⇔ A) := by {
-  sorry
+  apply andI
+  . -- Goal: (~~A ⇒ A)
+    apply impI
+    apply botC
+    apply impE (A := ~A)
+    -- Want to prove stuff from `(insert (~A) (insert ~~A ∅))`
+    . -- ⊢ ~A ⇒ ⊥
+      apply ax
+      apply mem_insert_of_mem -- discard first insert 
+      apply mem_insert -- expand definition of set members, here `~~A := ~A ⇒ ⊥`
+    -- ⊢ ~A
+    . apply ax
+      apply mem_insert
+
+  . -- Goal: (A ⇒ ~~A)
+    apply impI
+    apply impI
+    apply impE (A := A)
+    -- Want to prove stuff from `insert (~A) (insert A ∅)`
+    . -- ⊢ A ⇒ ⊥
+      apply ax
+      apply mem_insert
+    . -- ⊢ A
+      apply ax
+      apply mem_insert_of_mem
+      apply mem_insert
 }
 
 /- Optional exercise: prove the law of excluded middle. -/
-example : Provable (A || ~A) := by {
-  sorry
+@[simp] lemma excluded_middle : Provable (A || ~A) := by {
+  apply botC
+  apply impE (A := A || ~A) (B := ⊥)
+  . apply ax
+    apply mem_insert -- proves `(A -> ⊥) ∈ ~(A || ~A)`
+  . apply orI2
+    apply impI
+    apply impE (A := A || ~A) (B := ⊥)
+    . apply ax
+      apply mem_insert_of_mem
+      apply mem_insert
+    . apply orI1
+      apply ax
+      apply mem_insert
 }
 
 /- Optional exercise: prove one of the de-Morgan laws.
   If you want to say that the argument called `A` of the axiom `impE` should be `X && Y`,
   you can do this using `impE (A := X && Y)` -/
+--example : Provable (~(A && B) ⇔ ~A || ~B) := by {
+--  apply andI
+--  . sorry
+--  . apply impI
+--    apply impI
+--    apply orE (A := ~A) (B := ~B) (C := ⊥)
+--    . apply ax --(C := ⊥)
+--      apply mem_insert_of_mem
+--      apply mem_insert
+--    . 
+--      simp_all only [insert_emptyc_eq]
+--      sorry
+--    . 
+--      sorry
+--}
 example : Provable (~(A && B) ⇔ ~A || ~B) := by {
-  sorry
+  apply andI
+  . 
+    apply impI
+    apply orE (A := A) (B := ~A) (C := ~A || ~B)
+    . --HACK: literally writes out `excluded_middle` proof, theere must be a way to `apply` it directly instead
+      apply botC
+      apply impE (A := A || ~A) (B := ⊥)
+      . apply ax
+        apply mem_insert -- proves `(A -> ⊥) ∈ ~(A || ~A)`
+      . apply orI2
+        apply impI
+        apply impE (A := A || ~A) (B := ⊥)
+        . apply ax
+          apply mem_insert_of_mem
+          apply mem_insert
+        . apply orI1
+          apply ax
+          apply mem_insert
+    . 
+      apply impE (A := B || ~B)
+      .
+        apply impI
+        apply orE (A := B) (B := ~B) (C := ~A || ~B)
+        . --HACK
+          apply botC
+          apply impE (A := B || ~B) (B := ⊥)
+          . apply ax
+            apply mem_insert
+          . apply orI2
+            apply impI
+            apply impE (A := B || ~B) (B := ⊥)
+            . apply ax
+              apply mem_insert_of_mem
+              apply mem_insert
+            . apply orI1
+              apply ax
+              apply mem_insert
+        . apply botC
+          apply impE (A := A && B) (B := ⊥)
+          . 
+            apply ax
+            apply mem_insert_of_mem
+            apply mem_insert_of_mem
+            apply mem_insert_of_mem
+            apply mem_insert_of_mem
+            apply mem_insert
+          
+          . exact andI (by apply_ax) (by apply_ax)
+        . apply orI2
+          apply ax
+          apply mem_insert
+      . --HACK: exact `excluded_middle` proof
+        apply botC
+        apply impE (A := B || ~B) (B := ⊥)
+        . apply ax
+          apply mem_insert
+        . apply orI2
+          apply impI
+          apply impE (A := B || ~B) (B := ⊥)
+          . apply ax
+            apply mem_insert_of_mem
+            apply mem_insert
+          . apply orI1
+            apply ax
+            apply mem_insert
+    . apply orI1
+      apply_ax
+  . 
+    apply impI
+    apply impI
+    apply orE (A:= ~A) (B := ~B) (by apply_ax)
+    . apply impE (by apply_ax)
+      apply andE1 (by apply_ax)
+    . apply impE (by apply_ax)
+      apply andE2 (by apply_ax)
 }
 
 /- You can prove the following using `induction` on `h`. You will want to tell Lean that you want
@@ -155,29 +295,58 @@ example : Provable (~(A && B) ⇔ ~A || ~B) := by {
   You will probably need to use the lemma
   `insert_subset_insert : s ⊆ t → insert x s ⊆ insert x t`. -/
 lemma weakening (h : Γ ⊢ A) (h2 : Γ ⊆ Δ) : Δ ⊢ A := by {
-  sorry
+  induction h generalizing Δ
+  case ax =>
+    apply ax
+    apply h2
+    simp_all only
+  case impI => apply impI; solve_by_elim [insert_subset_insert]
+  case impE => apply impE <;> solve_by_elim
+  case andI => apply andI <;> solve_by_elim
+  case andE1 => apply andE1 <;> solve_by_elim
+  case andE2 => apply andE2 <;> solve_by_elim
+  case orI1 => apply orI1; solve_by_elim
+  case orI2 => apply orI2; solve_by_elim
+  case orE => apply orE <;> solve_by_elim [insert_subset_insert]
+  case botC => apply botC; solve_by_elim [insert_subset_insert]
 }
 
 /- Use the `apply?` tactic to find the lemma that states `Γ ⊆ insert x Γ`.
   You can click the blue suggestion in the right panel to automatically apply the suggestion. -/
 
-lemma ProvableFrom.insert (h : Γ ⊢ A) : insert B Γ ⊢ A := by {
-  sorry
+lemma ProableFrom.insert (h : Γ ⊢ A) : insert B Γ ⊢ A := by {
+  apply weakening h
+  exact subset_insert B Γ
 }
 
 /- Proving the deduction theorem is now easy. -/
 lemma deduction_theorem (h : Γ ⊢ A) : insert (A ⇒ B) Γ ⊢ B := by {
-  sorry
+  apply impE (ax $ mem_insert _ _)
+  apply weakening h
+  exact subset_insert (A ⇒ B) Γ
 }
 
 lemma Provable.mp (h1 : Provable (A ⇒ B)) (h2 : Γ ⊢ A) : Γ ⊢ B := by {
-  sorry
+  apply impE _ h2
+  apply weakening h1
+  exact empty_subset Γ
 }
 
 /-- You will want to use the tactics `left` and `right` to prove a disjunction, and the
   tactic `cases h` if `h` is a disjunction to do a case distinction. -/
 theorem soundness_theorem (h : Γ ⊢ A) : Γ ⊨ A := by {
-  sorry
+  intro v h'
+  induction h generalizing v
+  · case ax => sorry
+  · case impI => sorry
+  · case impE => sorry
+  · case andI => sorry
+  · case andE1 => sorry
+  · case andE2 => sorry
+  · case orI1 => sorry
+  . case orI2 => sorry
+  · case orE => sorry
+  · case botC => sorry
 }
 
 theorem valid_of_provable (h : Provable A) : Valid A := by {

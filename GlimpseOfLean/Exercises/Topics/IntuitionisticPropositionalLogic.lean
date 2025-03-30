@@ -65,18 +65,19 @@ variable {v : Variable → H} {A B : Formula}
 @[simp] lemma eval_neg : eval v ~A = (eval v A)ᶜ := by simp
 
 @[simp] lemma eval_top : eval v top = ⊤ := by {
-  sorry
+  simp only [eval, himp_self]
 }
 
 @[simp]
 lemma isTrue_equiv : eval v (A ⇔ B) = (eval v A ⇨ eval v B) ⊓ (eval v B ⇨ eval v A) := by {
-  sorry
+  simp only [eval, himp_self]
 }
 
 /- As an exercise, let's prove the following proposition, which holds in intuitionistic logic. -/
 
 example : Valid (~(A && ~A)) := by {
-  sorry
+  simp only [Valid, Models, eval_neg, eval, himp_self]
+  simp
 }
 
 /- Let's define provability w.r.t. intuitionistic logic. -/
@@ -123,7 +124,11 @@ macro_rules
 ```
 -/
 example : Provable ((~A || ~B) ⇒ ~(A && B)) := by {
-  sorry
+  apply orE (A := ~A) (B := ~B)
+  . sorry
+  .
+    sorry
+  . sorry
 }
 
 /- Optional exercise -/
