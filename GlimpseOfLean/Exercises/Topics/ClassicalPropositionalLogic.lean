@@ -136,7 +136,7 @@ example : insert A (insert B ∅) ⊢ A && B := by
 
 --example : insert A (insert B ∅) ⊢ A && B := by
 --  apply andI
---  . 
+--  .
 --    apply ax
 --    apply mem_insert
 --  . sorry
@@ -153,7 +153,7 @@ example : Provable (~~A ⇔ A) := by {
     -- Want to prove stuff from `(insert (~A) (insert ~~A ∅))`
     . -- ⊢ ~A ⇒ ⊥
       apply ax
-      apply mem_insert_of_mem -- discard first insert 
+      apply mem_insert_of_mem -- discard first insert
       apply mem_insert -- expand definition of set members, here `~~A := ~A ⇒ ⊥`
     -- ⊢ ~A
     . apply ax
@@ -202,15 +202,15 @@ example : Provable (~~A ⇔ A) := by {
 --    . apply ax --(C := ⊥)
 --      apply mem_insert_of_mem
 --      apply mem_insert
---    . 
+--    .
 --      simp_all only [insert_emptyc_eq]
 --      sorry
---    . 
+--    .
 --      sorry
 --}
 example : Provable (~(A && B) ⇔ ~A || ~B) := by {
   apply andI
-  . 
+  .
     apply impI
     apply orE (A := A) (B := ~A) (C := ~A || ~B)
     . --HACK: literally writes out `excluded_middle` proof, theere must be a way to `apply` it directly instead
@@ -227,7 +227,7 @@ example : Provable (~(A && B) ⇔ ~A || ~B) := by {
         . apply orI1
           apply ax
           apply mem_insert
-    . 
+    .
       apply impE (A := B || ~B)
       .
         apply impI
@@ -248,14 +248,14 @@ example : Provable (~(A && B) ⇔ ~A || ~B) := by {
               apply mem_insert
         . apply botC
           apply impE (A := A && B) (B := ⊥)
-          . 
+          .
             apply ax
             apply mem_insert_of_mem
             apply mem_insert_of_mem
             apply mem_insert_of_mem
             apply mem_insert_of_mem
             apply mem_insert
-          
+
           . exact andI (by apply_ax) (by apply_ax)
         . apply orI2
           apply ax
@@ -276,7 +276,7 @@ example : Provable (~(A && B) ⇔ ~A || ~B) := by {
             apply mem_insert
     . apply orI1
       apply_ax
-  . 
+  .
     apply impI
     apply impI
     apply orE (A:= ~A) (B := ~B) (by apply_ax)
@@ -349,9 +349,8 @@ theorem soundness_theorem (h : Γ ⊢ A) : Γ ⊨ A := by {
   · case botC => sorry
 }
 
-theorem valid_of_provable (h : Provable A) : Valid A := by {
+theorem valid_of_provable (h : Provable A) : Valid A := by
   sorry
-}
 
 /-
   If you want, you can now try some these longer projects.
@@ -371,4 +370,3 @@ theorem valid_of_provable (h : Provable A) : Valid A := by {
 -/
 
 end ClassicalPropositionalLogic
-

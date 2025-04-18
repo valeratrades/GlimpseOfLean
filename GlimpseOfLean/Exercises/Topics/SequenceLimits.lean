@@ -119,7 +119,7 @@ Let's see an example.
 
 -- If `u` tends to `l` and `v` tends `l'` then `u+v` tends to `l+l'`
 example (hu : seq_limit u l) (hv : seq_limit v l') :
-    seq_limit (u + v) (l + l') := by {
+    seq_limit (u + v) (l + l') := by
   intros ε ε_pos
   rcases hu (ε/2) (by linarith) with ⟨N₁, hN₁⟩
   rcases hv (ε/2) (by linarith) with ⟨N₂, hN₂⟩
@@ -136,7 +136,6 @@ example (hu : seq_limit u l) (hv : seq_limit v l') :
     _ = |(u n - l) + (v n - l')|                      := by ring
     _ ≤ |u n - l| + |v n - l'|                        := by apply abs_add
     _ ≤ ε                                             := by linarith [fact₁, fact₂]
-}
 
 
 /- Let's do something similar: the squeezing theorem. -/
@@ -216,9 +215,8 @@ def non_decreasing (u : ℕ → ℝ) := ∀ n m, n ≤ m → u n ≤ u m
 def is_seq_sup (M : ℝ) (u : ℕ → ℝ) :=
 (∀ n, u n ≤ M) ∧ ∀ ε > 0, ∃ n₀, u n₀ ≥ M - ε
 
-example (M : ℝ) (h : is_seq_sup M u) (h' : non_decreasing u) : seq_limit u M := by {
+example (M : ℝ) (h : is_seq_sup M u) (h' : non_decreasing u) : seq_limit u M := by
   sorry
-}
 
 /-
 We will now play with subsequences.
@@ -237,12 +235,11 @@ in this tutorial. If you did the natural number game then you can delete
 the proof below and try to reconstruct it.
 -/
 /-- An extraction is greater than id -/
-lemma id_le_extraction' : extraction φ → ∀ n, n ≤ φ n := by {
+lemma id_le_extraction' : extraction φ → ∀ n, n ≤ φ n := by
   intros hyp n
   induction n with
   | zero =>  exact Nat.zero_le _
   | succ n ih => exact Nat.succ_le_of_lt (by linarith [hyp n (n+1) (by linarith)])
-}
 
 
 /-
@@ -252,9 +249,8 @@ In the exercise, we use `∃ n ≥ N, ...` which is the abbreviation of
 
 /-- Extractions take arbitrarily large values for arbitrarily large
 inputs. -/
-lemma extraction_ge : extraction φ → ∀ N N', ∃ n ≥ N', φ n ≥ N := by {
+lemma extraction_ge : extraction φ → ∀ N N', ∃ n ≥ N', φ n ≥ N := by
   sorry
-}
 
 /- A real number `a` is a cluster point of a sequence `u`
 if `u` has a subsequence converging to `a`.
@@ -265,29 +261,25 @@ def cluster_point (u : ℕ → ℝ) (a : ℝ) := ∃ φ, extraction φ ∧ seq_l
 /-- If `a` is a cluster point of `u` then there are values of
 `u` arbitrarily close to `a` for arbitrarily large input. -/
 lemma near_cluster :
-  cluster_point u a → ∀ ε > 0, ∀ N, ∃ n ≥ N, |u n - a| ≤ ε := by {
+  cluster_point u a → ∀ ε > 0, ∀ N, ∃ n ≥ N, |u n - a| ≤ ε := by
   sorry
-}
 
 
 /-- If `u` tends to `l` then its subsequences tend to `l`. -/
 lemma subseq_tendsto_of_tendsto' (h : seq_limit u l) (hφ : extraction φ) :
-seq_limit (u ∘ φ) l := by {
+seq_limit (u ∘ φ) l := by
   sorry
-}
 
 /-- If `u` tends to `l` all its cluster points are equal to `l`. -/
-lemma cluster_limit (hl : seq_limit u l) (ha : cluster_point u a) : a = l := by {
+lemma cluster_limit (hl : seq_limit u l) (ha : cluster_point u a) : a = l := by
   sorry
-}
 
 /-- Cauchy_sequence sequence -/
 def CauchySequence (u : ℕ → ℝ) :=
   ∀ ε > 0, ∃ N, ∀ p q, p ≥ N → q ≥ N → |u p - u q| ≤ ε
 
-example : (∃ l, seq_limit u l) → CauchySequence u := by {
+example : (∃ l, seq_limit u l) → CauchySequence u := by
   sorry
-}
 
 /-
 In the next exercise, you can reuse

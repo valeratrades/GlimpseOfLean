@@ -27,7 +27,6 @@ example (p q r s : Prop) (h : p → r) (h' : q → s) : (p ∧ q) → (r ∧ s) 
   constructor
   · exact h hp
   · exact h' hq
-}
 
 /- One can also prove a conjunction without the constructor tactic by gathering both sides
 using the `⟨`/`⟩` brackets, so the above proof can be rewritten as. -/
@@ -35,7 +34,6 @@ using the `⟨`/`⟩` brackets, so the above proof can be rewritten as. -/
 example (p q r s : Prop) (h : p → r) (h' : q → s) : (p ∧ q) → (r ∧ s) := by {
   intro hpq
   exact ⟨h hpq.1, h' hpq.2⟩
-}
 
 /- You can choose your own style in the next exercise. -/
 
@@ -53,9 +51,8 @@ example (p q r : Prop) : (p → (q → r)) ↔ ((p ∧ q) → r) := by {
 
 /- Of course Lean doesn't need any help to prove this kind of logical tautologies.
 This is the job of the `tauto` tactic, which can prove true statements in propositional logic. -/
-example (p q r : Prop) : (p → (q → r)) ↔ p ∧ q → r := by {
+example (p q r : Prop) : (p → (q → r)) ↔ p ∧ q → r := by
   tauto
-}
 
 /- # Extential quantifiers
 
@@ -64,9 +61,8 @@ then prove `P x₀`. This `x₀` can be an object from the local context
 or a more complicated expression. In the example below, the property
 to check after `use` is true by definition so the proof is over.
 -/
-example : ∃ n : ℕ, 8 = 2*n := by {
+example : ∃ n : ℕ, 8 = 2*n := by
   use 4
-}
 
 /-
 In order to use `h : ∃ x, P x`, we use the `rcases` tactic to fix
@@ -75,14 +71,13 @@ one `x₀` that works.
 Again `h` can come straight from the local context or can be a more
 complicated expression.
 -/
-example (n : ℕ) (h : ∃ k : ℕ, n = k + 1) : n > 0 := by {
+example (n : ℕ) (h : ∃ k : ℕ, n = k + 1) : n > 0 := by
   -- Let's fix k₀ such that n = k₀ + 1.
   rcases h with ⟨k₀, hk₀⟩
   -- It now suffices to prove k₀ + 1 > 0.
   rw [hk₀]
   -- and we have a lemma about this
   exact Nat.succ_pos k₀
-}
 
 /-
 The next exercises use divisibility in ℤ (beware the ∣ symbol which is
@@ -113,7 +108,7 @@ example (f g : ℝ → ℝ) (h : Surjective (g ∘ f)) : Surjective g := by {
   unfold Surjective
 
   intro x
-  
+
   have h' := h x
   rcases h' with ⟨y, hgf⟩
 
@@ -132,4 +127,3 @@ actual mathematical content. You now get to choose one file from the `Topics`.
 
 See the bottom of `03Forall` for descriptions of the choices.
 -/
-
