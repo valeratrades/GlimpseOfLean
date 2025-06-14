@@ -3,6 +3,6 @@
 }:
 pkgs.mkShellNoCC {
   shellHook = ''
-		elan override set 4.13.0
+		elan override set 4.16.0
   '';
 }

@@ -1,0 +1,7 @@
+/home/v/s/GlimpseOfLean/.devenv/flake.json
+/home/v/s/GlimpseOfLean/.devenv.flake.nix
+/home/v/s/GlimpseOfLean/.env
+/home/v/s/GlimpseOfLean/devenv.local.nix
+/home/v/s/GlimpseOfLean/devenv.lock
+/home/v/s/GlimpseOfLean/devenv.nix
+/home/v/s/GlimpseOfLean/devenv.yaml
