@@ -28,10 +28,10 @@ Let's prove some exercises using `linarith`.
 -/
 
 example (a b : ℝ) (ha : 0 ≤ a) (hb : 0 ≤ b) : 0 ≤ a + b := by
-  sorry
+  linarith
 
 example (a b c d : ℝ) (hab : a ≤ b) (hcd : c ≤ d) : a + c ≤ b + d := by
-  sorry
+  linarith
 
 /-
 A sequence `u` is a function from `ℕ` to `ℝ`, hence Lean says
@@ -67,7 +67,14 @@ where `by linarith` will provide the proof of `δ/2 > 0` expected by Lean.
 /- If u is constant with value l then u tends to l.
 Hint: `simp` can rewrite `|l - l|` to `0` -/
 example (h : ∀ n, u n = l) : seq_limit u l := by
-  sorry
+  simp[seq_limit]
+  intro ε hε
+  use 0
+  intro n hn
+  specialize h (n)
+  rw[h]
+  simp
+  linarith
 
 
 /-
@@ -101,7 +108,13 @@ or the primed version:
 -- Assume `l > 0`. Then `u` ts to `l` implies `u n ≥ l/2` for large enough `n`
 example (h : seq_limit u l) (hl : l > 0) :
     ∃ N, ∀ n ≥ N, u n ≥ l/2 := by
-  sorry
+  simp[seq_limit] at *
+  obtain ⟨N, hN⟩ := h (l/2) (div_pos hl (by norm_num))
+  use N
+  intro n hn
+  have hdist: |u n - l| ≤ l/2 := hN n hn
+  have hleft : -(l/2) ≤ u n - l := (abs_le.mp hdist).1 -- `abs_le.mp hdist` expands into `-(l/2) ≤ u n - l ≤ l/2`, as `|u n - l|` is a module
+  linarith
 
 
 /-
