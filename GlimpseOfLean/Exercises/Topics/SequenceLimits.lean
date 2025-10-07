@@ -157,10 +157,42 @@ from the assumptions.
 -/
 example (hu : seq_limit u l) (hw : seq_limit w l) (h : ∀ n, u n ≤ v n) (h' : ∀ n, v n ≤ w n) :
     seq_limit v l := by
-  sorry
+  simp[seq_limit] at *
+  intro ε hε
+  specialize hu ε hε
+  obtain ⟨Nu, hNu⟩ := hu
+  specialize hw ε hε
+  obtain ⟨Nw, hNw⟩ := hw
 
+  let N := max Nu Nw
+  use N
+  intro n hn
 
-
+  simp[abs_le] at *
+  constructor
+  . 
+    have: Nu <= n := by {
+      have := le_max_left Nu Nw
+      have: Nu <= N := this
+      linarith
+    }
+    specialize hNu n this
+    specialize h n
+    calc l
+      _ ≤ u n + ε := hNu.1
+      _ ≤ v n + ε := by rel[h]
+  . 
+    have: Nw <= n := by {
+      have := le_max_right Nu Nw
+      have: Nw <= N := this
+      linarith
+    }
+    specialize hNw n this
+    specialize h' n
+    calc v n
+      _ ≤ w n := by rel[h']
+      _ ≤ ε + l := hNw.2
+  
 /- In the next exercise, we'll use
 
 `eq_of_abs_sub_le_all (x y : ℝ) : (∀ ε > 0, |x - y| ≤ ε) → x = y`
