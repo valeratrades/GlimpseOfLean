@@ -203,10 +203,24 @@ Recall we listed three variations on the triangle inequality at the beginning of
 -- A sequence admits at most one limit. You will be able to use that lemma in the following
 -- exercises.
 lemma unique_limit : seq_limit u l → seq_limit u l' → l = l' := by
-  sorry
+  intro hl hl'
+  simp[seq_limit] at *
+  apply eq_of_abs_sub_le_all
+  intro ε εpos
 
+  rcases hl (ε/2) (by linarith) with ⟨N, hN⟩
+  rcases hl' (ε/2) (by linarith) with ⟨N', hN'⟩
 
+  specialize hN _ (le_max_left N N')
+  specialize hN' _ (le_max_right N N')
 
+  calc |l - l'|
+  _ ≤ |l - u (max N N')| + |u (max N N') - l'| := by apply abs_sub_le
+  _ = |u (max N N') - l| + |u (max N N') - l'| := by rw[abs_sub_comm]
+  _ ≤ (ε/2) + (ε/2) := by rel[hN, hN']
+  _ = ε := by ring
+
+  
 /-
 Let's now practice deciphering definitions before proving.
 -/
@@ -216,8 +230,51 @@ def non_decreasing (u : ℕ → ℝ) := ∀ n m, n ≤ m → u n ≤ u m
 def is_seq_sup (M : ℝ) (u : ℕ → ℝ) :=
 (∀ n, u n ≤ M) ∧ ∀ ε > 0, ∃ n₀, u n₀ ≥ M - ε
 
+lemma triangle_ineq_le {x y z : ℝ} : |x - z| ≤ |x - y| + |y - z| := by
+  have hxz : x - z = (x - y) + (y - z) := by ring
+  rw [hxz]
+  exact abs_add (x - y) (y - z)
+
 example (M : ℝ) (h : is_seq_sup M u) (h' : non_decreasing u) : seq_limit u M := by
-  sorry
+  simp[non_decreasing] at *
+  simp[is_seq_sup] at *
+  simp[seq_limit] at *
+
+  obtain ⟨inf_M, sup_M_ε⟩ := h
+
+  intro ε εpos
+  rcases sup_M_ε (ε) (εpos) with ⟨n₀, hMle⟩
+ 
+  use n₀
+  intro n hn
+
+  rw[abs_le]
+  constructor
+  . 
+    have:= sub_le_sub_right hMle ε
+    have:= sub_le_sub_right this M
+
+    have h0le: u n₀ ≤ u n:= by {
+      exact h' n₀ n hn
+    }
+
+    calc -ε
+    _ = M - ε - M := by ring
+    _ ≤ u n₀ + ε - ε - M := by rel[this]
+    _ = u n₀ - M := by ring
+    _ ≤ u n - M := by rel[h0le]
+  . 
+    
+    have: u n - M ≤ 0 := by {
+      specialize inf_M n
+      calc u n - M
+      _ ≤ M - M := by rel[inf_M]
+      _ = 0 := by ring
+    }
+
+    calc u n - M
+    _ ≤ 0 := by rel[this]
+    _ ≤ ε := by rel[εpos]
 
 /-
 We will now play with subsequences.

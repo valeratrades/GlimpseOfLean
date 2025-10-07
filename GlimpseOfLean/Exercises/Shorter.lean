@@ -438,8 +438,16 @@ example (a b c : ℤ) (h₁ : a ∣ b) (h₂ : b ∣ c) : a ∣ c := by
     _ = (a*k)*l := by congr
     _ = a*(k*l) := by ring
 
+
 example (a b c : ℤ) (h₁ : a ∣ b) (h₂ : a ∣ c) : a ∣ b + c := by
-  sorry
+  simp[Dvd.dvd] at *
+  obtain ⟨k, hk⟩ := h₁
+  obtain ⟨l, hl⟩ := h₂
+
+  use k + l
+  calc b + c
+  _ = (a * k) + (a * l) := by rw[hk, hl]
+  _ = a * (k + l) := by ring
 
 /-
 ## Conjunctions
@@ -462,8 +470,8 @@ from `P ∧ Q`.
 
 example (P Q : Prop) (h : P ∧ Q) : Q ∧ P := by
   constructor
-  apply h.2
-  apply h.1
+  . apply h.2
+  . apply h.1
 
 /-
 ## Limits
@@ -530,7 +538,48 @@ You will probably want to rewrite using `abs_le` in several assumptions as well 
 goal. You can use `rw [abs_le] at *` for this. -/
 example (hu : seq_limit u l) (hw : seq_limit w l) (h : ∀ n, u n ≤ v n) (h' : ∀ n, v n ≤ w n) :
     seq_limit v l := by
-  sorry
+  simp[seq_limit] at *
+  intro ε εpos
+
+  specialize hu ε (by {
+    linarith
+  })
+  obtain ⟨Nu, hNu⟩ := hu
+
+  specialize hw ε (by linarith)
+  obtain ⟨Nw, hNw⟩ := hw
+
+  let N := max Nu Nw
+  use N
+
+  intro n hn
+  rw[abs_le]
+
+  constructor
+  . 
+    specialize hNu n (by {
+      have := le_max_left Nu Nw
+      have: Nu <= N := this
+      linarith
+    })
+    rw[abs_le] at hNu
+
+    specialize h n
+    calc -ε
+    _ ≤ u n - l := hNu.1
+    _ ≤ v n - l := by rel[h]
+  . 
+    specialize hNw n (by {
+      have := le_max_right Nu Nw
+      have: Nw <= N := this
+      linarith
+    })
+    rw[abs_le] at hNw
+
+    specialize h' n
+    calc v n - l
+    _ ≤ w n - l := by rel[h']
+    _ ≤ ε := hNw.2
 
 
 /- In the next exercise, we'll use
