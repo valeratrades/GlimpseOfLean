@@ -305,14 +305,48 @@ In the exercise, we use `∃ n ≥ N, ...` which is the abbreviation of
 `∃ n, n ≥ N ∧ ...`.
 -/
 
-/-- Extractions take arbitrarily large values for arbitrarily large
-inputs. -/
-lemma extraction_ge : extraction φ → ∀ N N', ∃ n ≥ N', φ n ≥ N := by
-  sorry
+--ref: \
+--/-- A function `f` is strictly monotone if `a < b` implies `f a < f b`. -/
+--def StrictMono (f : α → β) : Prop :=
+--  ∀ ⦃a b⦄, a < b → f a < f b
+
+
+lemma my_strict_mono.id_le {φ : ℕ → ℕ} (h: ∀ ⦃a b : ℕ⦄, a < b → φ a < φ b): ∀ n, n ≤ φ n := by {
+  intro n
+  induction n
+  case zero =>
+    exact Nat.zero_le _
+  case succ n ih =>
+    apply Nat.add_one_le_iff.2
+    have: n < n + 1 := by linarith
+    specialize h this
+    calc n
+    _ ≤ φ n := ih
+    _ < φ (n + 1) := by rel[h]
+}
+
+lemma extraction_ge : extraction φ → ∀ N N', ∃ n ≥ N', φ n ≥ N := by {
+  simp[extraction] at *
+  intro h N₁ N₂
+
+  let N := max N₁ N₂
+  use N 
+  constructor
+  . 
+    exact le_max_right N₁ N₂
+  . 
+    have:= my_strict_mono.id_le h
+    specialize this N
+    calc N₁
+    _ ≤ N := le_max_left N₁ N₂
+    _ ≤ φ N := by rel[this]
+}
 
 /- A real number `a` is a cluster point of a sequence `u`
 if `u` has a subsequence converging to `a`.
 -/
+
+
 
 def cluster_point (u : ℕ → ℝ) (a : ℝ) := ∃ φ, extraction φ ∧ seq_limit (u ∘ φ) a
 
